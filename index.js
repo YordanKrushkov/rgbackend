@@ -10,7 +10,7 @@ require('./Config/express')(app);
 app.use('/', router);
 app.use('/', auth);
 
-app.listen(config.port,(err)=>{
+app.listen(process.env.PORT || config.port,(err)=>{
     if(err){
         console.log('Server error FIX:',err);
         return;
