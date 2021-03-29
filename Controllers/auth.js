@@ -2,7 +2,7 @@ const User = require('../Model/user')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../Config/config')
-
+const { uploader, destroyImage } = require('../Utils/Images')
 const generateToken = (data) => {
         const token = jwt.sign(data, config.privateKey);
         return token;
@@ -78,20 +78,30 @@ const verify = async (req, res) => {
                 return
         }
 }
-const getuser=async(req,res)=>{
+const getuser = async (req, res) => {
 
-    try {
-                const user = await User.findOne({email:'rfgeorgieva@gmail.com'});
+        try {
+                const user = await User.findOne({ email: 'rfgeorgieva@gmail.com' });
                 res.send(user)
         }
- catch {
-        return
-}
-} 
-const updateUser=async(req,res)=>{
-        const {id}=req.body;
-        const user= await User.findOneAndUpdate({_id:id},{$set:{...req.body}})
+        catch {
+                return
         }
+}
+const updateUser = async (req, res) => {
+        const { id, description, oldImg } = req.body.prop;
+        const img = await uploader(req);
+        let user=""
+        if (img && img.length!==0) {
+                console.log(img);
+                user = await User.findOneAndUpdate({ _id: id }, { $set: { img: img[0] } });
+                await destroyImage(oldImg);
+        }
+        if (description !== '') {
+                user = await User.findOneAndUpdate({ _id: id }, { $set: { bio: description } });
+        }
+        res.status(200).send(user)
+}
 module.exports = {
         register,
         login,
